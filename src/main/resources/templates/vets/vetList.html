@@ -7,6 +7,12 @@
 
   <h2>Veterinarians</h2>
 
+  <form th:action="@{/vets.html}" method="get">
+    <label for="name">Search by name</label>
+    <input id="name" name="name" type="search" th:value="${searchName}">
+    <button type="submit">Search</button>
+  </form>
+
   <table id="vets" class="table table-striped">
     <thead>
       <tr>

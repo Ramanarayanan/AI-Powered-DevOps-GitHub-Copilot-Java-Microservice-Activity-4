@@ -1,12 +1,17 @@
 package org.springframework.samples.petclinic.vet;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import org.assertj.core.util.Lists;
 import org.junit.Before;
@@ -56,6 +61,26 @@ public class VetControllerTests {
             .andExpect(status().isOk())
             .andExpect(model().attributeExists("vets"))
             .andExpect(view().name("vets/vetList"));
+    }
+
+    @Test
+    public void testSearchVetListHtml() throws Exception {
+        given(this.vets.findByName("James")).willReturn(Lists.newArrayList());
+
+        mockMvc.perform(get("/vets.html").param("name", "James"))
+            .andExpect(status().isOk())
+            .andExpect(model().attributeExists("vets", "searchName"))
+            .andExpect(view().name("vets/vetList"));
+    }
+
+    @Test
+    public void testControllerUsesRepositoryProvidedToConstructor() {
+        VetController controller = new VetController(this.vets);
+        Map<String, Object> model = new HashMap<>();
+
+        assertEquals("vets/vetList", controller.showVetList(model));
+        assertEquals(2, ((Vets) model.get("vets")).getVetList().size());
+        verify(this.vets).findAll();
     }
 
     @Test

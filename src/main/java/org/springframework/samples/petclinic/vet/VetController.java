@@ -17,6 +17,7 @@ package org.springframework.samples.petclinic.vet;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.Map;
@@ -43,6 +44,15 @@ class VetController {
         Vets vets = new Vets();
         vets.getVetList().addAll(this.vets.findAll());
         model.put("vets", vets);
+        return "vets/vetList";
+    }
+
+    @GetMapping(value = "/vets.html", params = "name")
+    public String searchVetList(@RequestParam("name") String name, Map<String, Object> model) {
+        Vets vets = new Vets();
+        vets.getVetList().addAll(this.vets.findByName(name));
+        model.put("vets", vets);
+        model.put("searchName", name);
         return "vets/vetList";
     }
 
