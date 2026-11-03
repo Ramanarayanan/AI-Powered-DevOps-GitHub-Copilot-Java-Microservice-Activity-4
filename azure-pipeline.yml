@@ -1,0 +1,49 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pr:
+  branches:
+    include:
+      - main
+
+pool:
+  name: Default
+  demands:
+    - Agent.Name -equals ram_agent_win_64
+    - Agent.OS -equals Windows_NT
+
+stages:
+  - stage: Build
+    displayName: Build and publish
+    jobs:
+      - job: MavenBuild
+        displayName: Maven build
+        steps:
+          - checkout: self
+
+          - task: Maven@3
+            displayName: Maven goal execution
+            inputs:
+              mavenPomFile: pom.xml
+              goals: clean package
+              publishJUnitResults: true
+              testResultsFiles: '**/surefire-reports/TEST-*.xml'
+              javaHomeOption: JDKVersion
+              jdkVersionOption: '1.8'
+              mavenVersionOption: Default
+
+          - task: CopyFiles@2
+            displayName: Copy WAR artifact
+            inputs:
+              SourceFolder: $(Build.SourcesDirectory)\target
+              Contents: petclinic.war
+              TargetFolder: $(Build.ArtifactStagingDirectory)
+
+          - task: PublishBuildArtifacts@1
+            displayName: Publish build artifact
+            inputs:
+              PathtoPublish: $(Build.ArtifactStagingDirectory)
+              ArtifactName: petclinic
+              publishLocation: Container
